@@ -1,5 +1,5 @@
-# # РАЗРАБОТКА СИСТЕМЫ МАШИННОГО ОБУЧЕНИЯ
-Отчет по лабораторной работе #3 выполнил(а):
+# # ПАРЦЕПТРОН
+Отчет по лабораторной работе #4 выполнил(а):
 - Сафаргалеев Никита Олегович
 - РИ210914
 Отметка о выполнении заданий (заполняется студентом):
@@ -18,95 +18,32 @@
 - ст. преп., Фадеев В.О.
 
 ## Цель работы
-Познакомиться с программными средствами для создания системы машинного обучения и ее интеграции в Unity.
+Познакомиться с парцептронами и понять их возможности.
 ## Задание 1
-### Реализовать систему машинного обучения в связке Python - Google-Sheets – Unity.
+### Создание нового проекта в Unity.
 Создаем проект в Unity.
-Открываем Anaconda Promt и пишем команды для создания и активации нового ML агента
+Создаем пустой объект и добавляем ему скрипт.
 
-``` conda create -n MLAgent python=3.6 ```
+![](1)
+![](2)
 
-``` conda activate MLAgent ```
+Вводим необходимые входные данные для обучения. В данном случае для логического оператора OR:
 
-``` pip install mlagents ```
+![](3)
 
-``` pip install torch~=1.7.1 -f https://download.pytorch.org/whl/torch_stable.html ```
+Смотрим на итог в консоли
 
-![](https://github.com/Little-hot-dog/RTF_Work_3/blob/main/1.png)
+![](4)
 
-Далее в консоли переходим в папку с проектом
-Создаем объекты плоскости, куба и сферы.
-![](https://github.com/Little-hot-dog/RTF_Work_3/blob/main/2.png)
+Итог: Парцептрон справился с задачей. Ему хватило 4 эпох обучения
 
-![](https://github.com/Little-hot-dog/RTF_Work_3/blob/main/3.png)
+Далее выполняем всё те же действия для операторов AND, NAND и XOR:
 
-В инспекторе добавялем в нашу сферу RigidBody, C# скрипт
-![](https://github.com/Little-hot-dog/RTF_Work_3/blob/main/4.png)
+![](5)
+![](6)
+![](7)
 
-```
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Unity.MLAgents;
-using Unity.MLAgents.Sensors;
-using Unity.MLAgents.Actuators;
-
-public class RollerAgent : Agent
-{
-    Rigidbody rBody;
-    // Start is called before the first frame update
-    void Start()
-    {
-        rBody = GetComponent<Rigidbody>();
-    }
-
-    public Transform Target;
-    public override void OnEpisodeBegin()
-    {
-        if (this.transform.localPosition.y < 0)
-        {
-            this.rBody.angularVelocity = Vector3.zero;
-            this.rBody.velocity = Vector3.zero;
-            this.transform.localPosition = new Vector3(0, 0.5f, 0);
-        }
-
-        Target.localPosition = new Vector3(Random.value * 8-4, 0.5f, Random.value * 8-4);
-    }
-    public override void CollectObservations(VectorSensor sensor)
-    {
-        sensor.AddObservation(Target.localPosition);
-        sensor.AddObservation(this.transform.localPosition);
-        sensor.AddObservation(rBody.velocity.x);
-        sensor.AddObservation(rBody.velocity.z);
-    }
-    public float forceMultiplier = 10;
-    public override void OnActionReceived(ActionBuffers actionBuffers)
-    {
-        Vector3 controlSignal = Vector3.zero;
-        controlSignal.x = actionBuffers.ContinuousActions[0];
-        controlSignal.z = actionBuffers.ContinuousActions[1];
-        rBody.AddForce(controlSignal * forceMultiplier);
-
-        float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target.localPosition);
-
-        if(distanceToTarget < 1.42f)
-        {
-            SetReward(1.0f);
-            EndEpisode();
-        }
-        else if (this.transform.localPosition.y < 0)
-        {
-            EndEpisode();
-        }
-    }
-}
-
-```
-
-Добавялем в корень проекта файл конфигурации нейронной сети, запускаем работу ml агента
-После прогона делаем 3, 9, 27 копий модели «Плоскость-Сфера-Куб», запускаем симуляцию сцены и наблюдаем за результатом обучения модели.
-![](https://github.com/Little-hot-dog/RTF_Work_3/blob/main/5.png)
-
+На XOR мы сталкиваемся не правильными выходными данными. В трёх предыдущих случаях на обучения требовалось от 1, до 4 эпох. Но здесь сколько бы эпох мы не добавляли, итоговый результат не изменится. Парцептрон не справляется. Он не способен решать нелинейные задачи. 
 
 ## Задание 2
 ### Подробно описать каждую строку файла конфигурации нейронной сети.
